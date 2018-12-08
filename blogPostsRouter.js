@@ -29,7 +29,7 @@ BlogPosts.create("Lions and tigers and bears oh my", lorem(), "Lefty Lil");
 
 // Endpoint for GET requests to root http://localhost:8080/blog-posts/ 
 // Returns a json response as defined by the function`BlogPosts.get()`
-// in models.js
+// in models.js as an array of all post objects created
 router.get("/", (req, res) => {
   res.json(BlogPosts.get());
 });
@@ -52,26 +52,21 @@ router.post("/", (req, res) => {
       return res.status(400).send(message);
     }
   }
-// add endpoint for POST requests, which should cause a new
-// blog post to be added (using `BlogPosts.create()`). It should
-// return a JSON object representing the new post (including
-// the id, which `BlogPosts` will create. 
+// a new blog post is added using the function BlogPosts.create() in models.js
   const item = BlogPosts.create(
     req.body.title,
     req.body.content,
     req.body.author
   );
+// and returns a JSON object representing the new post (including
+// the id, which `BlogPosts` will create. 
   res.status(201).json(item);
 });
 
-// add endpoint for PUT requests to update blogposts. it should
-// call `BlogPosts.update()` and return the updated post.
-// it should also ensure that the id in the object representing
-// the post matches the id of the path variable, and that the
-// following required fields are in request body: `id`, `title`,
-// `content`, `author`, `publishDate`
-
+// Endpoint for PUT requests to http://localhost:8080/blog-posts/:id
 router.put("/:id", (req, res) => {
+  // as with POST, cycles through each defined word to ensure it is in the PUT request body
+  // and returns a 400 error if it is not
   const requiredFields = ["id", "title", "content", "author", "publishDate"];
   for (let i = 0; i < requiredFields.length; i++) {
     const field = requiredFields[i];
@@ -81,13 +76,18 @@ router.put("/:id", (req, res) => {
       return res.status(400).send(message);
     }
   }
+  // if the id paramater of the request does not matche the id in the body
+  // e.g. the url endpoint id is different than the id defined in the body
   if (req.params.id !== req.body.id) {
+    // return a 400 error that the ids must be the same
     const message = `Request path id (${
       req.params.id
       }) and request body id ``(${req.body.id}) must match`;
     console.error(message);
     return res.status(400).send(message);
   }
+  // otherwise the that specific post object will have its values updated
+  // using the funtion BlogPosts.update() in models.js
   console.log(`Updating blog post with id \`${req.params.id}\``);
   BlogPosts.update({
     id: req.params.id,
@@ -96,6 +96,7 @@ router.put("/:id", (req, res) => {
     author: req.body.author,
     publishDate: req.body.publishDate
   });
+  // and responds with a 204 to indicate update made
   res.status(204).end();
 });
 
@@ -103,10 +104,16 @@ router.put("/:id", (req, res) => {
 // have an id as a URL path variable and call
 // `BlogPosts.delete()`
 
+// Endpoint for DELETE requests to http://localhost:8080/blog-posts/:id
 router.delete("/:id", (req, res) => {
+  // using the function BlogPosts.delete from models.js
+  // deletes the specific post object with the id defined in the 
+  // request params, e.g. the url endpoint id
   BlogPosts.delete(req.params.id);
   console.log(`Deleted blog post with id \`${req.params.ID}\``);
+  // 204 response sent
   res.status(204).end();
 });
 
+// BlogPostsRouter.js named 'router' to import in other scripts
 module.exports = router;
